@@ -1,0 +1,14 @@
+api = "0.7"
+
+[buildpack]
+  id = "deno-buildpack"
+  version = "0.1.0"
+  homepage = "https://runway.planetary-quantum.com"
+  description = "A deno buildpack (for runway)"
+
+[metadata]
+  include-files = ["bin/build", "bin/detect", "buildpack.toml"]
+  pre-package = "make build"
+
+[[stacks]]
+  id = "*"
