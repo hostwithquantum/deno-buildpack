@@ -61,10 +61,6 @@ Contains a version such as `vA.B.C`.
 
 > (last) The buildpack also supports a `.dvmrc` file.
 
-## Development
+## Contributions?
 
-Run `make setup` to configure the default builder and trust it.
-
-Run `make test` to build an (app) image from `./samples/deno` with one entrypoints:
-
-- web: `docker run --rm -p 8080:8080 test-deno-app`
+See [CONTRIBUTING.md](CONTRIBUTING.md) for everything (local setup, testing, releasing).
