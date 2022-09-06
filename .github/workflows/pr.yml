@@ -1,0 +1,44 @@
+---
+name: pr
+
+on:
+  pull_request
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_REGISTRY: "r.planetary-quantum.com"
+      DOCKER_REPO: "buildpacks"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.19
+      - uses: docker/login-action@v1
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ secrets.BP_QUANTUM_DOCKER_USERNAME }}
+          password: ${{ secrets.BP_QUANTUM_DOCKER_PASSWORD }}
+      - uses: buildpacks/github-actions/setup-pack@v4.8.1
+      - id: package
+        run: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+          BP_ID="$(cat buildpack.toml | yj -t | jq -r .buildpack.id)"
+          VERSION="$(cat buildpack.toml | yj -t | jq -r .buildpack.version)"
+          PACKAGE="${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}/$(echo "$BP_ID" | sed 's/\//_/g')"
+          echo "::set-output name=package::$PACKAGE"
+          echo "::set-output name=version::$VERSION"
+      - run: make build
+      - run: |
+          pack -v \
+            buildpack \
+            package --publish \
+            ${{ steps.package.outputs.package }}:${{ steps.package.outputs.version }}
+      - run: |
+          make setup \
+            builder=paketobuildpacks/builder:tiny
+      - run: |
+          make smoke \
+            buildpack=${{ steps.package.outputs.package }}:${{ steps.package.outputs.version }}
