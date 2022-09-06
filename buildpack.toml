@@ -2,7 +2,7 @@ api = "0.7"
 
 [buildpack]
   id = "deno-buildpack"
-  version = "dev"
+  version = "0.1.0"
   homepage = "https://runway.planetary-quantum.com"
   description = "A deno buildpack (for runway)"
 
