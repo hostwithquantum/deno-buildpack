@@ -2,7 +2,7 @@ sample:=deno
 
 buildpack?=.
 bin_dir:=$(CURDIR)/bin
-builder?=r.planetary-quantum.com/runway-public/paketo-builder:full
+builder?=r.planetary-quantum.com/runway-public/runway-buildpack-stack:jammy-full
 
 .PHONY: build
 build:
