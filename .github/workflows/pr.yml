@@ -16,15 +16,13 @@ jobs:
         with:
           go-version-file: go.mod
       - uses: buildpacks/github-actions/setup-pack@v4.8.1
-      - id: package
+      - id: extract-package
+        shell: bash
         run: |
-          #!/usr/bin/env bash
-          set -euo pipefail
           BP_ID="$(cat buildpack.toml | yj -t | jq -r .buildpack.id)"
-          VERSION="$(cat buildpack.toml | yj -t | jq -r .buildpack.version)"
           PACKAGE="${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}/$(echo "$BP_ID" | sed 's/\//_/g')"
-          echo "::set-output name=package::$PACKAGE"
-          echo "::set-output name=version::$VERSION"
+          echo "package=${PACKAGE}" >> $GITHUB_OUTPUT
+      - run: sed -i.bak -E "s/__replace__/dev/" buildpack.toml
       - uses: goreleaser/goreleaser-action@v6
         with:
           version: '~> v2'
@@ -37,10 +35,10 @@ jobs:
           pack -v \
             buildpack \
             package \
-            ${{ steps.package.outputs.package }}:${{ steps.package.outputs.version }}
+            ${{ steps.extract-package.outputs.package }}:dev
       - run: |
           make setup \
             builder=paketobuildpacks/builder:tiny
       - run: |
           make smoke \
-            buildpack=${{ steps.package.outputs.package }}:${{ steps.package.outputs.version }}
+            buildpack=${{ steps.extract-package.outputs.package }}:dev
