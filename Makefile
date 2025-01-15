@@ -5,19 +5,8 @@ bin_dir:=$(CURDIR)/bin
 builder?=r.planetary-quantum.com/runway-public/paketo-builder:full
 
 .PHONY: build
-build: clean bin/detect bin/build
-
-bin/build:
-	GOOS=linux go build \
-		-ldflags="-s -w" \
-		-o "$(bin_dir)/build" \
-		"$(CURDIR)/cmd/build/main.go"
-
-bin/detect:
-	GOOS=linux go build \
-		-ldflags="-s -w" \
-		-o "$(bin_dir)/detect" \
-		"$(CURDIR)/cmd/detect/main.go"
+build:
+	goreleaser build --single-target --clean --snapshot
 
 .PHONY: clean
 clean:
@@ -42,9 +31,7 @@ test: build
 
 .PHONY: act-pr
 act-pr:
-	act "pull_request" \
-		-s BP_QUANTUM_DOCKER_USERNAME \
-		-s BP_QUANTUM_DOCKER_PASSWORD
+	act -P ubuntu-latest=catthehacker/ubuntu:act-latest "pull_request"
 
 .PHONY: smoke
 smoke:
