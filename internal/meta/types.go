@@ -18,7 +18,7 @@ type AppEnv struct {
 	AllowWrite  string `env:"BP_RUNWAY_DENO_PERM_WRITE" envDefault:"false"`
 	AllowAll    bool   `env:"BP_RUNWAY_DENO_PERM_ALL" envDefault:"false"`
 
-	DenoVersion     string `env:"BP_RUNWAY_DENO_VERSION" envDefault:"v1.25.1"`
+	DenoVersion     string `env:"BP_RUNWAY_DENO_VERSION" envDefault:"v1.46.3"`
 	DenoFileVersion string `env:"BP_RUNWAY_DENO_FILE_VERSION" envDefault:"runtime.txt"`
 	DenoMain        string `env:"BP_RUNWAY_DENO_MAIN" envDefault:"server.ts"`
 }

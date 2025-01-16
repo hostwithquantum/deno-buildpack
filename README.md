@@ -6,7 +6,7 @@ A deno buildpack (for [runway](https://runway.planetary-quantum.com/)).
 
 ## Configuration
 
-- `BP_RUNWAY_DENO_VERSION=v1.25.1`
+- `BP_RUNWAY_DENO_VERSION=v1.46.3`
 - `BP_RUNWAY_DENO_FILE_VERSION=runtime.txt`
 - `BP_RUNWAY_DENO_PERM_ENV=PORT`
 - `BP_RUNWAY_DENO_PERM_HRTIME=false`
