@@ -2,12 +2,17 @@ package version
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/hostwithquantum/deno-buildpack/internal/meta"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
+)
+
+// this needs to be updated when we increase the deno version
+const (
+	versionDeno    = "v2.1.5"
+	versionDefault = "__default__"
 )
 
 type Version struct {
@@ -22,46 +27,50 @@ func VersionFactory(env meta.AppEnv, logger scribe.Emitter) *Version {
 	}
 }
 
+// Find
+// This determines the deno version to download. This does not validate the version
+// in terms of available release.
 func (v *Version) Find(workDir string) (string, error) {
 	denoVersion := v.env.DenoVersion
-	if denoVersion != "" {
+	if denoVersion != "" && denoVersion != versionDefault {
 		return fixVersionString(denoVersion), nil
 	}
 
-	if v.env.DenoFileVersion != "" {
-		runtimeFile := filepath.Join(workDir, v.env.DenoFileVersion)
-		v.logger.Detail("trying %s", runtimeFile)
+	runtimeFile := filepath.Join(workDir, v.env.DenoFileVersion)
+	v.logger.Detail("trying %s", runtimeFile)
 
-		if _, err := os.Stat(runtimeFile); err != nil {
-			cnt, err := ioutil.ReadFile(filepath.Join(workDir, v.env.DenoFileVersion))
-			if err != nil {
-				return "", err
-			}
-			if len(cnt) > 0 {
-				denoVersion = string(cnt)
-				v.logger.Subdetail("discovered: %s", denoVersion)
-
-				return fixVersionString(denoVersion), nil
-			}
-		}
+	if fileExists(runtimeFile) {
+		return v.extractVersion(runtimeFile)
 	}
 
-	v.logger.Detail("trying %s", meta.DENO_BP_DVMRC_FILE)
-	if _, err := os.Stat(filepath.Join(workDir, meta.DENO_BP_DVMRC_FILE)); err != nil {
-		cnt, err := ioutil.ReadFile(filepath.Join(workDir, meta.DENO_BP_DVMRC_FILE))
-		if err != nil {
-			return "", err
-		}
-
-		if len(cnt) > 0 {
-			denoVersion = string(cnt)
-			v.logger.Subdetail("discovered %s", denoVersion)
-			return fixVersionString(denoVersion), nil
-		}
+	dvmrcFile := filepath.Join(workDir, meta.DENO_BP_DVMRC_FILE)
+	v.logger.Detail("trying %s", dvmrcFile)
+	if fileExists(dvmrcFile) {
+		return v.extractVersion(dvmrcFile)
 	}
 
-	// use latest
-	return "latest", nil
+	// use our default version
+	return versionDefault, nil
+}
+
+func fileExists(file string) bool {
+	_, err := os.Stat(file)
+	return err == nil
+}
+
+func (v *Version) extractVersion(file string) (string, error) {
+	cnt, err := os.ReadFile(file)
+	if err != nil {
+		return "", err
+	}
+
+	if len(cnt) > 0 {
+		denoVersion := string(cnt)
+		v.logger.Subdetail("discovered %s", denoVersion)
+		return fixVersionString(denoVersion), nil
+	}
+
+	return versionDefault, nil
 }
 
 func fixVersionString(ver string) string {
