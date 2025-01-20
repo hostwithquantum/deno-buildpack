@@ -6,7 +6,7 @@ A deno buildpack (for [runway](https://runway.planetary-quantum.com/)).
 
 ## Configuration
 
-- `BP_RUNWAY_DENO_VERSION=v1.46.3`
+- `BP_RUNWAY_DENO_VERSION=`
 - `BP_RUNWAY_DENO_FILE_VERSION=runtime.txt`
 - `BP_RUNWAY_DENO_PERM_ENV=PORT`
 - `BP_RUNWAY_DENO_PERM_HRTIME=false`
@@ -16,7 +16,7 @@ A deno buildpack (for [runway](https://runway.planetary-quantum.com/)).
 - `BP_RUNWAY_DENO_PERM_RUN=false`
 - `BP_RUNWAY_DENO_PERM_WRITE=false`
 - `BP_RUNWAY_DENO_PERM_ALL=false`
-- `BP_RUNWAY_DENO_MAIN=server.ts`
+- `BP_RUNWAY_DENO_MAIN=main.ts,server.ts`
 
 Supported permissions:
 

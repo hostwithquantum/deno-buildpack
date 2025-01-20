@@ -27,7 +27,7 @@ func Build(logger scribe.Emitter, appEnv meta.AppEnv) packit.BuildFunc {
 		finder.Find(context.WorkingDir)
 
 		if !finder.HasMatch() {
-			logger.Process("not a deno app")
+			logger.Process("Not a deno app")
 			return packit.BuildResult{}, nil
 		}
 
@@ -45,7 +45,7 @@ func Build(logger scribe.Emitter, appEnv meta.AppEnv) packit.BuildFunc {
 		layer.Build = false
 		layer.Launch = true
 
-		logger.Process("getting deno version")
+		logger.Process("Detecting deno version")
 
 		v := version.VersionFactory(appEnv, logger)
 		denoVersion, err := v.Find(context.WorkingDir)
@@ -54,49 +54,39 @@ func Build(logger scribe.Emitter, appEnv meta.AppEnv) packit.BuildFunc {
 		}
 
 		if denoVersion != "" {
-			logger.Detail("discovered %s", denoVersion)
+			logger.Subprocess("Found %q", denoVersion)
 		}
 
 		layerBinPath := filepath.Join(layer.Path, "bin")
-		err = os.MkdirAll(layerBinPath, os.ModePerm)
-		if err != nil {
+		if err := os.MkdirAll(layerBinPath, os.ModePerm); err != nil {
 			return packit.BuildResult{}, err
 		}
 
 		var downloadUrl string
-		downloadDest := filepath.Join(layer.Path, "deno.zip")
-
-		logger.Process("download")
 		if denoVersion != "latest" {
-			logger.Detail("building download for: %s", denoVersion)
 			downloadUrl = fmt.Sprintf(
 				"https://github.com/denoland/deno/releases/download/%s/deno-x86_64-unknown-linux-gnu.zip",
 				denoVersion)
 		} else {
-			logger.Detail("building download for latest")
 			downloadUrl = "https://github.com/denoland/deno/releases/latest/download/deno-x86_64-unknown-linux-gnu.zip"
 		}
 
-		logger.Process("installing deno %s", denoVersion)
+		logger.Subprocess("Downloading deno %q from Github", denoVersion)
 
-		logger.Subprocess("downloading deno")
-		logger.Subdetail("url: %s", downloadUrl)
-		logger.Subdetail("to: %s", downloadDest)
-
+		// FIXME(till): we will eventually need token support here to avoid rate-limiting
 		resp, err := http.Get(downloadUrl)
 		if err != nil {
-			logger.Detail("download failed")
+			logger.Detail("Download failed")
 			return packit.BuildResult{}, err
 		}
 
 		defer resp.Body.Close()
 
-		logger.Subprocess("extracting download")
-		logger.Subdetail("to: %s", layerBinPath)
+		logger.Subprocess("Extracting download")
+		logger.Detail("Destination: %q", layerBinPath)
 
 		zip := vacation.NewZipArchive(resp.Body).StripComponents(0)
-		err = zip.Decompress(layerBinPath)
-		if err != nil {
+		if err := zip.Decompress(layerBinPath); err != nil {
 			logger.Detail("failed")
 			return packit.BuildResult{}, err
 		}
@@ -108,12 +98,13 @@ func Build(logger scribe.Emitter, appEnv meta.AppEnv) packit.BuildFunc {
 
 		denoRunArgs := []string{"run"}
 
-		logger.Process("determine permissions for deno process")
+		logger.Process("Permission setup for deno app")
 
 		if appEnv.AllowAll {
-			logger.Detail("granting all permissions — this is not very secure")
+			logger.Subprocess("Granting all permissions — this is not very secure")
 			denoRunArgs = append(denoRunArgs, "--allow-all")
 		} else {
+			logger.Subprocess("Setting granular permissions")
 			if appEnv.AllowEnv != "false" {
 				assembleArgs(&denoRunArgs, "--allow-env", appEnv.AllowEnv)
 				logger.Detail("Set --allow-env")
@@ -151,13 +142,35 @@ func Build(logger scribe.Emitter, appEnv meta.AppEnv) packit.BuildFunc {
 		}
 
 		// run bundle?
+		logger.Process("Bundler")
 		if _, err = os.Stat(filepath.Join(context.WorkingDir, "tsconfig.js")); err == nil {
-			fmt.Println("we could run bundle here")
+			logger.Subprocess("Detected tsconfig.js")
+			logger.Detail("Send feedback if we should run the bundler here: support@runway.horse")
 		}
 
 		logger.EnvironmentVariables(layer)
 
-		denoRunArgs = append(denoRunArgs, appEnv.DenoMain)
+		// fall back to main.ts according to `deno init`
+		logger.Process("Finding entrypoint")
+		if len(appEnv.DenoMain) == 0 {
+			logger.Subprocess("Using default (main.ts)")
+			denoRunArgs = append(denoRunArgs, "main.ts")
+		} else {
+			var foundMain bool = false
+			for _, f := range appEnv.DenoMain {
+				if _, err := os.Stat(filepath.Join(context.WorkingDir, f)); err == nil {
+					foundMain = true
+					denoRunArgs = append(denoRunArgs, f)
+					logger.Subprocess("Using %q", f)
+					break
+				}
+			}
+
+			if !foundMain {
+				logger.Subprocess("Unable to determine main file/entrypoint for app, please see BP_RUNWAY_DENO_MAIN")
+				return packit.BuildResult{}, fmt.Errorf("unable to find entrypoint")
+			}
+		}
 
 		launchMetadata.Processes = []packit.Process{
 			{

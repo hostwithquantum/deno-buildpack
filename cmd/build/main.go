@@ -16,8 +16,7 @@ func main() {
 	logEmitter := scribe.NewEmitter(os.Stdout).WithLevel(os.Getenv("BP_LOG_LEVEL"))
 
 	var allTheVars meta.AppEnv
-	err := env.Parse(&allTheVars)
-	if err != nil {
+	if err := env.Parse(&allTheVars); err != nil {
 		fmt.Fprintln(os.Stdout, fmt.Errorf("failed getting environment: %s", err))
 		os.Exit(1)
 	}
