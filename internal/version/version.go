@@ -50,7 +50,8 @@ func (v *Version) Find(workDir string) (string, error) {
 	}
 
 	// use our default version
-	return versionDefault, nil
+	v.logger.Detail("using default: %s", versionDeno)
+	return versionDeno, nil
 }
 
 func fileExists(file string) bool {
@@ -70,7 +71,7 @@ func (v *Version) extractVersion(file string) (string, error) {
 		return fixVersionString(denoVersion), nil
 	}
 
-	return versionDefault, nil
+	return versionDeno, nil
 }
 
 func fixVersionString(ver string) string {
