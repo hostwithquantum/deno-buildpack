@@ -1,6 +1,6 @@
 module github.com/hostwithquantum/deno-buildpack
 
-go 1.19
+go 1.24.1
 
 require (
 	github.com/caarlos0/env v3.5.0+incompatible
