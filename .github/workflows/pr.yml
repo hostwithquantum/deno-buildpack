@@ -15,8 +15,8 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - uses: buildpacks/github-actions/setup-tools@v5.9.1
-      - uses: buildpacks/github-actions/setup-pack@v5.9.1
+      - uses: buildpacks/github-actions/setup-tools@v5.9.2
+      - uses: buildpacks/github-actions/setup-pack@v5.9.2
       - id: extract-package
         shell: bash
         run: |
