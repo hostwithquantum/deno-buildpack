@@ -1,10 +1,10 @@
 module github.com/hostwithquantum/deno-buildpack
 
-go 1.24.3
+go 1.24.4
 
 require (
 	github.com/caarlos0/env v3.5.0+incompatible
-	github.com/paketo-buildpacks/packit/v2 v2.20.0
+	github.com/paketo-buildpacks/packit/v2 v2.21.0
 	github.com/stretchr/testify v1.10.0
 )
 
@@ -16,6 +16,6 @@ require (
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/ulikunitz/xz v0.5.12 // indirect
-	golang.org/x/net v0.40.0 // indirect
+	golang.org/x/net v0.41.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
