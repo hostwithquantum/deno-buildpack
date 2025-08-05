@@ -40,35 +40,8 @@ jobs:
             package \
             ${{ steps.extract-package.outputs.package }}:dev
       - run: |
-          docker save ${{ steps.extract-package.outputs.package }}:dev -o buildpack.tar
-      - name: Upload buildpack artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: buildpack
-          path: buildpack.tar
-          retention-days: 1
-
-  smoke:
-    needs: [build]
-    runs-on: ubuntu-latest
-    env:
-      BUILDER: paketobuildpacks/builder-jammy-base:latest
-    strategy:
-      matrix:
-        test: [deno, not-deno]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: buildpack
-      - run: docker load -i buildpack.tar
-      - run: docker image ls
-      - uses: buildpacks/github-actions/setup-tools@v5.9.3
-      - uses: buildpacks/github-actions/setup-pack@v5.9.3
-      - run: |
           make setup \
             builder=${{ env.BUILDER }}
       - run: |
-          make smoke-${{ matrix.test }} \
-            builder=${{ env.BUILDER }} \
-            buildpack=${{ needs.build.outputs.name }}:dev
+          make smoke \
+            buildpack=${{ steps.extract-package.outputs.package }}:dev
