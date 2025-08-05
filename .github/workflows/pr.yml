@@ -5,11 +5,13 @@ on:
   pull_request
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     env:
       DOCKER_REGISTRY: "r.planetary-quantum.com"
       DOCKER_REPO: "buildpacks"
+    outputs:
+      name: ${{ steps.extract-package.outputs.package }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -38,8 +40,32 @@ jobs:
             package \
             ${{ steps.extract-package.outputs.package }}:dev
       - run: |
+          docker save ${{ steps.extract-package.outputs.package }}:dev -o buildpack.tar
+      - name: Upload buildpack artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: buildpack
+          path: buildpack.tar
+          retention-days: 1
+
+  smoke:
+    needs: [build]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test: [deno, not-deno]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: buildpack
+      - run: docker load -i buildpack.tar
+      - run: docker image ls
+      - uses: buildpacks/github-actions/setup-tools@v5.9.3
+      - uses: buildpacks/github-actions/setup-pack@v5.9.3
+      - run: |
           make setup \
             builder=paketobuildpacks/builder-jammy-base:latest
       - run: |
-          make smoke \
-            buildpack=${{ steps.extract-package.outputs.package }}:dev
+          make smoke-${{ matrix.test }} \
+            buildpack=${{ needs.build.outputs.name }}:dev
