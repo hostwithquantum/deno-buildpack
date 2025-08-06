@@ -39,7 +39,7 @@ jobs:
             ${{ steps.extract-package.outputs.package }}:dev
       - run: |
           make setup \
-            builder=paketobuildpacks/builder:tiny
+            builder=paketobuildpacks/builder-jammy-base:latest
       - run: |
           make smoke \
             buildpack=${{ steps.extract-package.outputs.package }}:dev
