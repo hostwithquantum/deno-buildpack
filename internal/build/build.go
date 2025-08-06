@@ -28,7 +28,7 @@ func Build(logger scribe.Emitter, appEnv meta.AppEnv) packit.BuildFunc {
 
 		if !finder.HasMatch() {
 			logger.Process("Not a deno app")
-			return packit.BuildResult{}, nil
+			return packit.BuildResult{}, fmt.Errorf("this is not a deno app")
 		}
 
 		layer, err := context.Layers.Get(meta.BPLayerName)
