@@ -39,5 +39,7 @@ smoke-%:
 	pack \
 		build \
 		test-$(test)-app \
+		--builder $(builder) \
 		--path ./samples/$(test) \
+		--env "BP_LOG_LEVEL=DEBUG" \
 		--buildpack $(buildpack)

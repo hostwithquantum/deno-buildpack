@@ -51,6 +51,8 @@ jobs:
   smoke:
     needs: [build]
     runs-on: ubuntu-latest
+    env:
+      BUILDER: paketobuildpacks/builder-jammy-base:latest
     strategy:
       matrix:
         test: [deno, not-deno]
@@ -65,7 +67,8 @@ jobs:
       - uses: buildpacks/github-actions/setup-pack@v5.9.3
       - run: |
           make setup \
-            builder=paketobuildpacks/builder-jammy-base:latest
+            builder=${{ env.BUILDER }}
       - run: |
           make smoke-${{ matrix.test }} \
+            builder=${{ env.BUILDER }} \
             buildpack=${{ needs.build.outputs.name }}:dev
