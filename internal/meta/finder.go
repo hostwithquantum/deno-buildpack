@@ -20,7 +20,11 @@ func Factory() *Finder {
 		matches: make(map[string]string),
 	}
 
-	finder.Files = []string{DENO_CONFIG_FILE_JSON, DENO_CONFIG_FILE_JSONC, DENO_BP_DVMRC_FILE}
+	finder.Files = []string{
+		DENO_CONFIG_FILE_JSON,
+		DENO_CONFIG_FILE_JSONC,
+		DENO_BP_DVMRC_FILE,
+	}
 
 	versionFile, ok := os.LookupEnv(DENO_BP_VERSION_FILE)
 	if !ok {
@@ -37,14 +41,13 @@ func (f *Finder) Find(workingDir string) error {
 
 		l := filepath.Join(workingDir, metaFile)
 
-		exist, err := fs.Exists(l)
-		if err != nil {
+		if exist, err := fs.Exists(l); err != nil {
 			return err
-		}
-
-		if exist {
-			f.matched = true
-			f.matches[metaFile] = l
+		} else {
+			if exist {
+				f.matched = true
+				f.matches[metaFile] = l
+			}
 		}
 	}
 
