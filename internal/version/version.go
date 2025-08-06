@@ -27,6 +27,10 @@ func VersionFactory(env meta.AppEnv, logger scribe.Emitter) *Version {
 	}
 }
 
+func (v *Version) GetVersionByFile(path string) (string, error) {
+	return v.extractVersion(path)
+}
+
 // Find
 // This determines the deno version to download. This does not validate the version
 // in terms of available release.
