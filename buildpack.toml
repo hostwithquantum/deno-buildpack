@@ -1,18 +1,33 @@
-api = "0.7"
+api = "0.8"
 
 [buildpack]
-  id = "deno-buildpack"
+  id = "runway-buildpacks/deno"
   version = "__replace__"
-  homepage = "https://www.runway.horse/docs/"
-  description = "A deno buildpack (for runway)"
+  homepage = "https://www.runway.horse/docs/recipes/deno/"
+  description = "A deno buildpack (on Runway)"
 
   [[buildpack.licenses]]
     type = "BSD-2-Clause"
     uri = "https://github.com/hostwithquantum/deno-buildpack/blob/main/LICENSE"
 
 [metadata]
-  include-files = ["bin/build", "bin/detect", "buildpack.toml"]
-  pre-package = "make build"
+  include-files = [
+    "linux/amd64/bin/build",
+    "linux/amd64/bin/detect",
+    "linux/arm64/bin/build",
+    "linux/arm64/bin/detect",
+    "buildpack.toml",
+    "LICENSE",
+    "README.md"
+  ]
 
 [[stacks]]
   id = "*"
+
+[[targets]]
+  arch = "amd64"
+  os = "linux"
+
+[[targets]]
+  arch = "arm64"
+  os = "linux"
