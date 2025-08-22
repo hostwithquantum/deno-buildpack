@@ -40,6 +40,18 @@ func Config(ctx packit.BuildContext, logger scribe.Emitter) ([]string, error) {
 		mainFile string
 	)
 
+configServe:
+	for _, config := range configuration.Metadata.Configurations {
+		if config.Name != "BP_RUNWAY_DENO_SERVE" {
+			continue
+		}
+		v := getEnvWithDefault(config.Name, config.Default)
+		if v == "true" {
+			runArgs = []string{"serve"}
+			break configServe
+		}
+	}
+
 configMain:
 	for _, config := range configuration.Metadata.Configurations {
 		switch config.Name {

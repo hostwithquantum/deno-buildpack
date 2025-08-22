@@ -16,7 +16,7 @@ func TestFindEnvDefault(t *testing.T) {
 	v := meta.VersionFactory(logEmitter)
 	assert.NotNil(t, v)
 
-	detectedVersion, err := v.Find(packit.BuildContext{
+	detectedVersion, err := v.Find(packit.DetectContext{
 		CNBPath:    "../../",
 		WorkingDir: ".",
 	})

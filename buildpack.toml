@@ -1,7 +1,7 @@
 api = "0.7"
 
 [buildpack]
-  id = "deno-buildpack"
+  id = "runway-buildpacks/deno"
   version = "__replace__"
   homepage = "https://www.runway.horse/docs/"
   description = "A deno buildpack (for runway)"
@@ -73,6 +73,11 @@ api = "0.7"
     name = "BP_RUNWAY_DENO_MAIN"
     default = "main.ts,server.ts"
     description = "comma-separated list of possible entrypoint files"
+
+  [[metadata.configurations]]
+    name = "BP_RUNWAY_DENO_SERVE"
+    default = "false"
+    description = "use `deno serve` instead of `deno run`"
 
 [[stacks]]
   id = "*"

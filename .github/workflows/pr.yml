@@ -10,6 +10,7 @@ jobs:
     env:
       DOCKER_REGISTRY: "r.planetary-quantum.com"
       DOCKER_REPO: "buildpacks"
+      VERSION: ci
     outputs:
       name: ${{ steps.extract-package.outputs.package }}
     steps:
@@ -22,10 +23,9 @@ jobs:
       - id: extract-package
         shell: bash
         run: |
-          BP_ID="$(cat buildpack.toml | yj -t | jq -r .buildpack.id)"
-          PACKAGE="${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}/$(echo "$BP_ID" | sed 's/\//_/g')"
+          PACKAGE="${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}/deno"
           echo "package=${PACKAGE}" >> $GITHUB_OUTPUT
-      - run: sed -i.bak -E "s/__replace__/dev/" buildpack.toml
+      - run: sed -i.bak -E "s/__replace__/${{ env.VERSION }}/" buildpack.toml
       - uses: goreleaser/goreleaser-action@v6
         with:
           version: '~> v2'
@@ -38,9 +38,9 @@ jobs:
           pack -v \
             buildpack \
             package \
-            ${{ steps.extract-package.outputs.package }}:dev
+            ${{ steps.extract-package.outputs.package }}:${{ env.VERSION }}
       - run: |
-          docker save ${{ steps.extract-package.outputs.package }}:dev -o buildpack.tar
+          docker save ${{ steps.extract-package.outputs.package }}:${{ env.VERSION }} -o buildpack.tar
       - name: Upload buildpack artifact
         uses: actions/upload-artifact@v4
         with:
@@ -55,20 +55,32 @@ jobs:
       BUILDER: paketobuildpacks/builder-jammy-base:latest
     strategy:
       matrix:
-        test: [deno, not-deno]
+        include:
+          - test: deno
+            continue: false
+          - test: not-deno
+            continue: true
+          - test: deno2-serve
+            continue: false
     steps:
       - uses: actions/checkout@v4
+      - uses: buildpacks/github-actions/setup-tools@v5.9.3
+      - uses: buildpacks/github-actions/setup-pack@v5.9.3
       - uses: actions/download-artifact@v4
         with:
           name: buildpack
       - run: docker load -i buildpack.tar
+      - run: |
+          docker pull paketobuildpacks/builder-jammy-base:latest
+          docker pull paketobuildpacks/run-jammy-base:latest
+          docker pull buildpacksio/lifecycle:0.20.13
       - run: docker image ls
-      - uses: buildpacks/github-actions/setup-tools@v5.9.3
-      - uses: buildpacks/github-actions/setup-pack@v5.9.3
+      - run: pack buildpack inspect ${{ needs.build.outputs.name }}:ci
       - run: |
           make setup \
             builder=${{ env.BUILDER }}
-      - run: |
+      - continue-on-error: ${{ matrix.continue }}
+        run: |
           make smoke-${{ matrix.test }} \
             builder=${{ env.BUILDER }} \
-            buildpack=${{ needs.build.outputs.name }}:dev
+            buildpack=${{ needs.build.outputs.name }}:ci

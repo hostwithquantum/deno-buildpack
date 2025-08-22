@@ -90,4 +90,15 @@ func TestConfig(t *testing.T) {
 		}, logger)
 		assert.Error(t, err)
 	})
+
+	t.Run("samples/deno2-serve", func(t *testing.T) {
+		t.Setenv("BP_RUNWAY_DENO_PERM_ALL", "true")
+		t.Setenv("BP_RUNWAY_DENO_SERVE", "true")
+		runArgs, err := meta.Config(packit.BuildContext{
+			CNBPath:    "../../",
+			WorkingDir: "../../samples/deno2-serve",
+		}, logger)
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"serve", "--allow-all", "main.ts"}, runArgs)
+	})
 }
