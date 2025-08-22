@@ -55,6 +55,9 @@ Supersedes `BP_RUNWAY_DENO_FILE_VERSION`.
 
 Contains a version such as `vA.B.C`.
 
+> [!IMPORTANT]
+> Tested with Deno 1.x
+
 ##### BP_RUNWAY_DENO_FILE_VERSION
 
 `runtime.txt` should contain a version, such as `vA.B.C`.
