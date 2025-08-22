@@ -23,12 +23,39 @@ func Build(logger scribe.Emitter, appEnv meta.AppEnv) packit.BuildFunc {
 
 		logger.Title("%s %s", context.BuildpackInfo.ID, context.BuildpackInfo.Version)
 
-		finder := meta.Factory()
-		finder.Find(context.WorkingDir)
+		var metadata map[string]any
+		for _, p := range context.Plan.Entries {
+			if p.Name != "deno" {
+				continue
+			}
+			metadata = p.Metadata
+			break
+		}
 
-		if !finder.HasMatch() {
-			logger.Process("Not a deno app")
-			return packit.BuildResult{}, nil
+		if metadata == nil {
+			return packit.BuildResult{}, packit.Fail.WithMessage("malformed plan")
+		}
+
+		logger.Process("Getting version source")
+		path, ok := metadata["version_source"].(string)
+		if !ok {
+			return packit.BuildResult{}, packit.Fail.WithMessage(
+				"broken detection process, expected `version_source`",
+			)
+		}
+		logger.Subprocess("Found: %s", path)
+
+		logger.Process("Fetching deno version")
+		v := version.VersionFactory(appEnv, logger)
+		denoVersion, err := v.GetVersionByFile(path)
+		if err != nil {
+			return packit.BuildResult{}, packit.Fail.WithMessage(
+				"failed to get get deno version: %s", err,
+			)
+		}
+
+		if denoVersion != "" {
+			logger.Subprocess("Found %q in %s", denoVersion, path)
 		}
 
 		layer, err := context.Layers.Get(meta.BPLayerName)
@@ -44,18 +71,6 @@ func Build(logger scribe.Emitter, appEnv meta.AppEnv) packit.BuildFunc {
 
 		layer.Build = false
 		layer.Launch = true
-
-		logger.Process("Detecting deno version")
-
-		v := version.VersionFactory(appEnv, logger)
-		denoVersion, err := v.Find(context.WorkingDir)
-		if err != nil {
-			return packit.BuildResult{}, err
-		}
-
-		if denoVersion != "" {
-			logger.Subprocess("Found %q", denoVersion)
-		}
 
 		layerBinPath := filepath.Join(layer.Path, "bin")
 		if err := os.MkdirAll(layerBinPath, os.ModePerm); err != nil {

@@ -33,10 +33,13 @@ test: build
 act-pr:
 	act -P ubuntu-latest=catthehacker/ubuntu:act-latest "pull_request"
 
-.PHONY: smoke
-smoke:
+.PHONY: smoke-%
+smoke-%: test=$*
+smoke-%:
 	pack \
 		build \
-		test-$(sample)-app \
-		--path ./samples/$(sample) \
+		test-$(test)-app \
+		--builder $(builder) \
+		--path ./samples/$(test) \
+		--env "BP_LOG_LEVEL=DEBUG" \
 		--buildpack $(buildpack)
