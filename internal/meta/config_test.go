@@ -72,6 +72,17 @@ func TestConfig(t *testing.T) {
 		}, runArgs)
 	})
 
+	t.Run("samples/deno: --allow-all", func(t *testing.T) {
+		t.Setenv("BP_RUNWAY_DENO_PERM_ALL", "true")
+		runArgs, err := meta.Config(ctxDeno, logger)
+		assert.NoError(t, err)
+		assert.Equal(t, []string{
+			"run",
+			"--allow-all",
+			"server.ts",
+		}, runArgs)
+	})
+
 	t.Run("samples/no-deno", func(t *testing.T) {
 		_, err := meta.Config(packit.BuildContext{
 			CNBPath:    "../../",
