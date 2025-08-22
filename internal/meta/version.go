@@ -1,11 +1,11 @@
-package version
+package meta
 
 import (
 	"fmt"
 	"os"
 	"path/filepath"
 
-	"github.com/hostwithquantum/deno-buildpack/internal/meta"
+	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
 )
 
@@ -16,13 +16,11 @@ const (
 )
 
 type Version struct {
-	env    meta.AppEnv
 	logger scribe.Emitter
 }
 
-func VersionFactory(env meta.AppEnv, logger scribe.Emitter) *Version {
+func VersionFactory(logger scribe.Emitter) *Version {
 	return &Version{
-		env:    env,
 		logger: logger,
 	}
 }
@@ -34,20 +32,35 @@ func (v *Version) GetVersionByFile(path string) (string, error) {
 // Find
 // This determines the deno version to download. This does not validate the version
 // in terms of available release.
-func (v *Version) Find(workDir string) (string, error) {
-	denoVersion := v.env.DenoVersion
-	if denoVersion != "" && denoVersion != versionDefault {
-		return fixVersionString(denoVersion), nil
+func (v *Version) Find(ctx packit.BuildContext) (string, error) {
+	bp, err := os.Open(filepath.Join(ctx.CNBPath, "buildpack.toml"))
+	if err != nil {
+		return "", packit.Fail.WithMessage("failed to find buildpack.toml: %s", err)
 	}
 
-	runtimeFile := filepath.Join(workDir, v.env.DenoFileVersion)
-	v.logger.Detail("trying %s", runtimeFile)
-
-	if fileExists(runtimeFile) {
-		return v.extractVersion(runtimeFile)
+	var configuration BuildpackConfig
+	if err := decode(bp, &configuration); err != nil {
+		return "", err
 	}
 
-	dvmrcFile := filepath.Join(workDir, meta.DENO_BP_DVMRC_FILE)
+	for _, config := range configuration.Metadata.Configurations {
+		switch config.Name {
+		case "BP_RUNWAY_DENO_VERSION":
+			denoVersion := getEnvWithDefault(config.Name, config.Default)
+			if denoVersion != "" && denoVersion != versionDefault && denoVersion != "latest" {
+				return fixVersionString(denoVersion), nil
+			}
+		case "BP_RUNWAY_DENO_FILE_VERSION":
+			versionFile := getEnvWithDefault(config.Name, config.Default)
+			runtimeFile := filepath.Join(ctx.WorkingDir, versionFile)
+			v.logger.Detail("trying %s", runtimeFile)
+			if fileExists(runtimeFile) {
+				return v.extractVersion(runtimeFile)
+			}
+		}
+	}
+
+	dvmrcFile := filepath.Join(ctx.WorkingDir, DENO_BP_DVMRC_FILE)
 	v.logger.Detail("trying %s", dvmrcFile)
 	if fileExists(dvmrcFile) {
 		return v.extractVersion(dvmrcFile)

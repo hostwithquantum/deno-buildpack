@@ -2,13 +2,12 @@ package detect
 
 import (
 	"github.com/hostwithquantum/deno-buildpack/internal/meta"
-	"github.com/hostwithquantum/deno-buildpack/internal/version"
 
 	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
 )
 
-func Detect(logs scribe.Emitter, appEnv meta.AppEnv) packit.DetectFunc {
+func Detect(logs scribe.Emitter) packit.DetectFunc {
 	return func(context packit.DetectContext) (packit.DetectResult, error) {
 		plan := packit.DetectResult{
 			Plan: packit.BuildPlan{
@@ -34,7 +33,7 @@ func Detect(logs scribe.Emitter, appEnv meta.AppEnv) packit.DetectFunc {
 		logs.Detail("Detected deno")
 		logs.Detail("Found matches: %#v", finder.GetMatches())
 
-		v := version.VersionFactory(appEnv, logs)
+		v := meta.VersionFactory(logs)
 		var requirements = []packit.BuildPlanRequirement{}
 
 		for _, path := range finder.GetMatches() {

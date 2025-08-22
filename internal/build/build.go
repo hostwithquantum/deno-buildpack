@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/hostwithquantum/deno-buildpack/internal/meta"
-	"github.com/hostwithquantum/deno-buildpack/internal/version"
 
 	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
@@ -18,7 +17,7 @@ type PackageJSON struct {
 	Scripts map[string]string `json:"scripts"`
 }
 
-func Build(logger scribe.Emitter, appEnv meta.AppEnv) packit.BuildFunc {
+func Build(logger scribe.Emitter) packit.BuildFunc {
 	return func(context packit.BuildContext) (packit.BuildResult, error) {
 
 		logger.Title("%s %s", context.BuildpackInfo.ID, context.BuildpackInfo.Version)
@@ -46,7 +45,7 @@ func Build(logger scribe.Emitter, appEnv meta.AppEnv) packit.BuildFunc {
 		logger.Subprocess("Found: %s", path)
 
 		logger.Process("Fetching deno version")
-		v := version.VersionFactory(appEnv, logger)
+		v := meta.VersionFactory(logger)
 		denoVersion, err := v.GetVersionByFile(path)
 		if err != nil {
 			return packit.BuildResult{}, packit.Fail.WithMessage(
@@ -111,49 +110,11 @@ func Build(logger scribe.Emitter, appEnv meta.AppEnv) packit.BuildFunc {
 
 		var launchMetadata packit.LaunchMetadata
 
-		denoRunArgs := []string{"run"}
-
 		logger.Process("Permission setup for deno app")
 
-		if appEnv.AllowAll {
-			logger.Subprocess("Granting all permissions — this is not very secure")
-			denoRunArgs = append(denoRunArgs, "--allow-all")
-		} else {
-			logger.Subprocess("Setting granular permissions")
-			if appEnv.AllowEnv != "false" {
-				assembleArgs(&denoRunArgs, "--allow-env", appEnv.AllowEnv)
-				logger.Detail("Set --allow-env")
-			}
-
-			if appEnv.AllowHRTime {
-				denoRunArgs = append(denoRunArgs, "--allow-hrtime")
-				logger.Detail("Set --allow-hrtime")
-			}
-
-			if appEnv.AllowNet != "false" {
-				assembleArgs(&denoRunArgs, "--allow-net", appEnv.AllowNet)
-				logger.Detail("Set --allow-net")
-			}
-
-			if appEnv.AllowFFI {
-				denoRunArgs = append(denoRunArgs, "--allow-ffi")
-				logger.Detail("Set --allow-ffi")
-			}
-
-			if appEnv.AllowRead != "false" {
-				assembleArgs(&denoRunArgs, "--allow-read", appEnv.AllowRead)
-				logger.Detail("Set --allow-read")
-			}
-
-			if appEnv.AllowRun != "false" {
-				assembleArgs(&denoRunArgs, "--allow-run", appEnv.AllowRun)
-				logger.Detail("Set --allow-run")
-			}
-
-			if appEnv.AllowWrite != "false" {
-				assembleArgs(&denoRunArgs, "--allow-write", appEnv.AllowWrite)
-				logger.Detail("Set --allow-write")
-			}
+		runArgs, err := meta.Config(context, logger)
+		if err != nil {
+			return packit.BuildResult{}, err
 		}
 
 		// run bundle?
@@ -165,33 +126,11 @@ func Build(logger scribe.Emitter, appEnv meta.AppEnv) packit.BuildFunc {
 
 		logger.EnvironmentVariables(layer)
 
-		// fall back to main.ts according to `deno init`
-		logger.Process("Finding entrypoint")
-		if len(appEnv.DenoMain) == 0 {
-			logger.Subprocess("Using default (main.ts)")
-			denoRunArgs = append(denoRunArgs, "main.ts")
-		} else {
-			var foundMain bool = false
-			for _, f := range appEnv.DenoMain {
-				if _, err := os.Stat(filepath.Join(context.WorkingDir, f)); err == nil {
-					foundMain = true
-					denoRunArgs = append(denoRunArgs, f)
-					logger.Subprocess("Using %q", f)
-					break
-				}
-			}
-
-			if !foundMain {
-				logger.Subprocess("Unable to determine main file/entrypoint for app, please see BP_RUNWAY_DENO_MAIN")
-				return packit.BuildResult{}, fmt.Errorf("unable to find entrypoint")
-			}
-		}
-
 		launchMetadata.Processes = []packit.Process{
 			{
 				Type:    "web",
 				Command: "deno",
-				Args:    denoRunArgs,
+				Args:    runArgs,
 				Default: true,
 				Direct:  false,
 			},
@@ -203,13 +142,5 @@ func Build(logger scribe.Emitter, appEnv meta.AppEnv) packit.BuildFunc {
 			Layers: []packit.Layer{layer},
 			Launch: launchMetadata,
 		}, nil
-	}
-}
-
-func assembleArgs(args *[]string, opt string, optValue string) {
-	if len(optValue) == 0 || optValue == "true" {
-		*args = append(*args, opt)
-	} else {
-		*args = append(*args, fmt.Sprintf("%s=%s", opt, optValue))
 	}
 }
