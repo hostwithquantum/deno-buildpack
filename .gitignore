@@ -1,5 +1,12 @@
 .envrc
-bin/build
-bin/detect
-
 dist/
+
+build/
+build/buildpack.toml
+build/package.toml
+build/LICENSE
+build/README.md
+build/linux/amd64/bin/build
+build/linux/amd64/bin/detect
+build/linux/arm64/bin/build
+build/linux/arm64/bin/detect
