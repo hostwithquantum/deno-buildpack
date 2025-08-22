@@ -3,6 +3,8 @@ sample:=deno
 buildpack?=.
 bin_dir:=$(CURDIR)/bin
 builder?=r.planetary-quantum.com/runway-public/runway-buildpack-stack:jammy-full
+BUILD_DIR:=./build
+VERSION?=dev
 
 .PHONY: build
 build:
@@ -12,6 +14,7 @@ build:
 clean:
 	rm -f $(bin_dir)/detect
 	rm -f $(bin_dir)/build
+	rm -rf $(BUILD_DIR)
 
 
 .PHONY: setup
@@ -44,3 +47,13 @@ smoke-%:
 		--env "BP_LOG_LEVEL=DEBUG" \
 		--pull-policy never \
 		--buildpack $(buildpack)
+
+.PHONY: prep
+prep:
+	mkdir -p $(BUILD_DIR)/bin
+	cp dist/build_linux_amd64*/build $(BUILD_DIR)/bin/
+	cp dist/detect_linux_amd64*/detect $(BUILD_DIR)/bin/
+	cp buildpack.toml $(BUILD_DIR)/
+	sed -i.bak -E "s/__replace__/$(VERSION)/" $(BUILD_DIR)/buildpack.toml
+	rm -f $(BUILD_DIR)/buildpack.toml.bak
+	cp package.toml $(BUILD_DIR)/

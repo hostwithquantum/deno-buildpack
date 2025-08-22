@@ -12,7 +12,7 @@ jobs:
       DOCKER_REPO: "buildpacks"
       VERSION: ci
     outputs:
-      name: ${{ steps.extract-package.outputs.package }}
+      name: ${{ steps.setup.outputs.package }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
@@ -20,27 +20,24 @@ jobs:
           go-version-file: go.mod
       - uses: buildpacks/github-actions/setup-tools@v5.9.3
       - uses: buildpacks/github-actions/setup-pack@v5.9.3
-      - id: extract-package
+      - id: setup
         shell: bash
         run: |
           PACKAGE="${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}/deno"
           echo "package=${PACKAGE}" >> $GITHUB_OUTPUT
-      - run: sed -i.bak -E "s/__replace__/${{ env.VERSION }}/" buildpack.toml
       - uses: goreleaser/goreleaser-action@v6
         with:
           version: '~> v2'
-          install-only: true
-      - run: make build
-      - run: |
-          cp dist/build_linux_amd64_v1/build ./bin/build
-          cp dist/detect_linux_amd64_v1/detect ./bin/detect
-      - run: |
+          args: build --snapshot --clean
+      - run: make prep VERSION=${{ env.VERSION }}
+      - working-directory: build
+        run: |
           pack -v \
             buildpack \
             package \
-            ${{ steps.extract-package.outputs.package }}:${{ env.VERSION }}
+            ${{ steps.setup.outputs.package }}:${{ env.VERSION }}
       - run: |
-          docker save ${{ steps.extract-package.outputs.package }}:${{ env.VERSION }} -o buildpack.tar
+          docker save ${{ steps.setup.outputs.package }}:${{ env.VERSION }} -o buildpack.tar
       - name: Upload buildpack artifact
         uses: actions/upload-artifact@v4
         with:
