@@ -1,7 +1,7 @@
 api = "0.7"
 
 [buildpack]
-  id = "deno-buildpack"
+  id = "runway-buildpacks/deno"
   version = "__replace__"
   homepage = "https://www.runway.horse/docs/"
   description = "A deno buildpack (for runway)"

@@ -35,27 +35,14 @@ func Build(logger scribe.Emitter) packit.BuildFunc {
 			return packit.BuildResult{}, packit.Fail.WithMessage("malformed plan")
 		}
 
-		logger.Process("Getting version source")
-		path, ok := metadata["version_source"].(string)
+		logger.Process("Using deno version")
+		denoVersion, ok := metadata["version"].(string)
 		if !ok {
 			return packit.BuildResult{}, packit.Fail.WithMessage(
-				"broken detection process, expected `version_source`",
+				"broken detection process, expected `version`",
 			)
 		}
-		logger.Subprocess("Found: %s", path)
-
-		logger.Process("Fetching deno version")
-		v := meta.VersionFactory(logger)
-		denoVersion, err := v.GetVersionByFile(path)
-		if err != nil {
-			return packit.BuildResult{}, packit.Fail.WithMessage(
-				"failed to get get deno version: %s", err,
-			)
-		}
-
-		if denoVersion != "" {
-			logger.Subprocess("Found %q in %s", denoVersion, path)
-		}
+		logger.Subprocess("Version: %s", denoVersion)
 
 		layer, err := context.Layers.Get(meta.BPLayerName)
 		if err != nil {

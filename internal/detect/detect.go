@@ -8,20 +8,20 @@ import (
 )
 
 func Detect(logs scribe.Emitter) packit.DetectFunc {
-	return func(context packit.DetectContext) (packit.DetectResult, error) {
+	return func(ctx packit.DetectContext) (packit.DetectResult, error) {
 		plan := packit.DetectResult{
 			Plan: packit.BuildPlan{
 				Requires: []packit.BuildPlanRequirement{},
 			},
 		}
 
-		logs.Title("%s %s", context.BuildpackInfo.Name, context.BuildpackInfo.Version)
+		logs.Title("%s %s", ctx.BuildpackInfo.Name, ctx.BuildpackInfo.Version)
 
 		logs.Process("Running detection...")
-		logs.Process("Checking working directory: %s", context.WorkingDir)
+		logs.Process("Checking working directory: %s", ctx.WorkingDir)
 
 		finder := meta.Factory()
-		if err := finder.Find(context.WorkingDir); err != nil {
+		if err := finder.Find(ctx.WorkingDir); err != nil {
 			return packit.DetectResult{}, packit.Fail.WithMessage("%s", err.Error())
 		}
 
@@ -36,23 +36,23 @@ func Detect(logs scribe.Emitter) packit.DetectFunc {
 		v := meta.VersionFactory(logs)
 		var requirements = []packit.BuildPlanRequirement{}
 
-		for _, path := range finder.GetMatches() {
-			denoVersion, err := v.GetVersionByFile(path)
-			if err != nil {
-				continue
-			}
-
-			requirements = append(requirements, packit.BuildPlanRequirement{
-				Name: "deno",
-				Metadata: map[string]any{
-					"version":        denoVersion,
-					"version_source": path,
-				},
-			})
-
-			break
+		denoVersion, err := v.Find(ctx)
+		if err != nil {
+			return packit.DetectResult{}, err
 		}
 
+		requirements = append(requirements, packit.BuildPlanRequirement{
+			Name: "deno",
+			Metadata: map[string]any{
+				"version": denoVersion,
+			},
+		})
+
+		plan.Plan.Provides = []packit.BuildPlanProvision{
+			{
+				Name: "deno",
+			},
+		}
 		plan.Plan.Requires = requirements
 		return plan, nil
 	}

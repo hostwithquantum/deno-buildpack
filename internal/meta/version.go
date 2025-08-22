@@ -32,7 +32,7 @@ func (v *Version) GetVersionByFile(path string) (string, error) {
 // Find
 // This determines the deno version to download. This does not validate the version
 // in terms of available release.
-func (v *Version) Find(ctx packit.BuildContext) (string, error) {
+func (v *Version) Find(ctx packit.DetectContext) (string, error) {
 	bp, err := os.Open(filepath.Join(ctx.CNBPath, "buildpack.toml"))
 	if err != nil {
 		return "", packit.Fail.WithMessage("failed to find buildpack.toml: %s", err)
