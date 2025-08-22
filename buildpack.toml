@@ -14,5 +14,69 @@ api = "0.7"
   include-files = ["bin/build", "bin/detect", "buildpack.toml"]
   pre-package = "make build"
 
+  [[metadata.configurations]]
+    name = "BP_LOG_LEVEL"
+    default = "INFO"
+    description = "configures buildpack output verbosity. options include INFO and DEBUG"
+
+  [[metadata.configurations]]
+    name = "BP_RUNWAY_DENO_PERM_ENV"
+    default = "PORT"
+    description = "allow deno to access environment variables"
+
+  [[metadata.configurations]]
+    name = "BP_RUNWAY_DENO_PERM_HRTIME"
+    default = "false"
+    description = "allow deno to access high resolution time"
+
+  [[metadata.configurations]]
+    name = "BP_RUNWAY_DENO_PERM_NET"
+    default = "true"
+    description = "allow deno to access network"
+
+  [[metadata.configurations]]
+    name = "BP_RUNWAY_DENO_PERM_FFI"
+    default = "false"
+    description = "allow deno to use foreign function interface"
+
+  [[metadata.configurations]]
+    name = "BP_RUNWAY_DENO_PERM_READ"
+    default = "true"
+    description = "allow deno to read files"
+
+  [[metadata.configurations]]
+    name = "BP_RUNWAY_DENO_PERM_RUN"
+    default = "false"
+    description = "allow deno to run subprocesses"
+
+  [[metadata.configurations]]
+    name = "BP_RUNWAY_DENO_PERM_WRITE"
+    default = "false"
+    description = "allow deno to write files"
+
+  [[metadata.configurations]]
+    name = "BP_RUNWAY_DENO_PERM_ALL"
+    default = "false"
+    description = "grant all permissions to deno (not recommended for security)"
+
+  [[metadata.configurations]]
+    name = "BP_RUNWAY_DENO_VERSION"
+    default = "latest"
+    description = "deno version to install"
+
+  [[metadata.configurations]]
+    name = "BP_RUNWAY_DENO_FILE_VERSION"
+    default = "runtime.txt"
+    description = "file to read deno version from"
+
+  [[metadata.configurations]]
+    name = "BP_RUNWAY_DENO_MAIN"
+    default = "main.ts,server.ts"
+    description = "comma-separated list of possible entrypoint files"
+
 [[stacks]]
   id = "*"
+
+[[targets]]
+  arch = "amd64"
+  os = "linux"

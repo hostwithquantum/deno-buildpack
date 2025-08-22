@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/hostwithquantum/deno-buildpack/internal/detect"
-	"github.com/hostwithquantum/deno-buildpack/internal/meta"
 	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
 	"github.com/stretchr/testify/assert"
@@ -30,7 +29,7 @@ func TestDetect(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.SamplePath, func(t *testing.T) {
-			detectFunct := detect.Detect(logEmitter, meta.AppEnv{})
+			detectFunct := detect.Detect(logEmitter)
 			res, err := detectFunct(packit.DetectContext{
 				WorkingDir: tc.SamplePath,
 				CNBPath:    "../../",
