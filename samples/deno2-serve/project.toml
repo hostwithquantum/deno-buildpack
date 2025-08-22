@@ -1,0 +1,7 @@
+[build]
+  [[build.env]]
+    name = "BP_RUNWAY_DENO_PERM_ALL"
+    value = "true"
+  [[build.env]]
+    name = "BP_RUNWAY_DENO_SERVE"
+    value = "true"

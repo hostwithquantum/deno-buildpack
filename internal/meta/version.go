@@ -11,7 +11,7 @@ import (
 
 // this needs to be updated when we increase the deno version
 const (
-	versionDeno    = "v2.1.5"
+	versionDeno    = "v2.4.5"
 	versionDefault = "__default__"
 )
 

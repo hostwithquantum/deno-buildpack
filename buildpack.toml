@@ -74,6 +74,11 @@ api = "0.7"
     default = "main.ts,server.ts"
     description = "comma-separated list of possible entrypoint files"
 
+  [[metadata.configurations]]
+    name = "BP_RUNWAY_DENO_SERVE"
+    default = "false"
+    description = "use `deno serve` instead of `deno run`"
+
 [[stacks]]
   id = "*"
 

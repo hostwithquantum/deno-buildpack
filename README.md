@@ -17,6 +17,7 @@ A deno buildpack (for [runway](https://runway.planetary-quantum.com/)).
 - `BP_RUNWAY_DENO_PERM_WRITE=false`
 - `BP_RUNWAY_DENO_PERM_ALL=false`
 - `BP_RUNWAY_DENO_MAIN=main.ts,server.ts`
+- `BP_RUNWAY_DENO_SERVE=false`
 
 Supported permissions:
 
@@ -56,7 +57,7 @@ Supersedes `BP_RUNWAY_DENO_FILE_VERSION`.
 Contains a version such as `vA.B.C`.
 
 > [!IMPORTANT]
-> Tested with Deno 1.x
+> Tested with Deno 1.x and 2.x
 
 ##### BP_RUNWAY_DENO_FILE_VERSION
 
