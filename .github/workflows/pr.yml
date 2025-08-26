@@ -60,10 +60,10 @@ jobs:
           - test: deno2-serve
             continue: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: buildpacks/github-actions/setup-tools@v5.9.3
       - uses: buildpacks/github-actions/setup-pack@v5.9.3
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: buildpack
       - run: docker load -i buildpack.tar
