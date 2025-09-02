@@ -27,8 +27,8 @@ jobs:
           registry: ${{ env.DOCKER_REGISTRY }}
           username: ${{ secrets.BP_QUANTUM_DOCKER_USERNAME }}
           password: ${{ secrets.BP_QUANTUM_DOCKER_PASSWORD }}
-      - uses: buildpacks/github-actions/setup-tools@v5.9.3
-      - uses: buildpacks/github-actions/setup-pack@v5.9.3
+      - uses: buildpacks/github-actions/setup-tools@v5.9.4
+      - uses: buildpacks/github-actions/setup-pack@v5.9.4
       - id: version
         shell: bash
         run: |

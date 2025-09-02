@@ -18,8 +18,8 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - uses: buildpacks/github-actions/setup-tools@v5.9.3
-      - uses: buildpacks/github-actions/setup-pack@v5.9.3
+      - uses: buildpacks/github-actions/setup-tools@v5.9.4
+      - uses: buildpacks/github-actions/setup-pack@v5.9.4
       - id: setup
         shell: bash
         run: |
@@ -61,8 +61,8 @@ jobs:
             continue: false
     steps:
       - uses: actions/checkout@v5
-      - uses: buildpacks/github-actions/setup-tools@v5.9.3
-      - uses: buildpacks/github-actions/setup-pack@v5.9.3
+      - uses: buildpacks/github-actions/setup-tools@v5.9.4
+      - uses: buildpacks/github-actions/setup-pack@v5.9.4
       - uses: actions/download-artifact@v5
         with:
           name: buildpack
