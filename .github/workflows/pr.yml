@@ -14,12 +14,12 @@ jobs:
     outputs:
       name: ${{ steps.setup.outputs.package }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
-      - uses: buildpacks/github-actions/setup-tools@v5.9.4
-      - uses: buildpacks/github-actions/setup-pack@v5.9.4
+      - uses: buildpacks/github-actions/setup-tools@v5.9.7
+      - uses: buildpacks/github-actions/setup-pack@v5.9.7
       - id: setup
         shell: bash
         run: |
@@ -39,7 +39,7 @@ jobs:
       - run: |
           docker save ${{ steps.setup.outputs.package }}:${{ env.VERSION }} -o buildpack.tar
       - name: Upload buildpack artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: buildpack
           path: buildpack.tar
@@ -60,10 +60,10 @@ jobs:
           - test: deno2-serve
             continue: false
     steps:
-      - uses: actions/checkout@v5
-      - uses: buildpacks/github-actions/setup-tools@v5.9.4
-      - uses: buildpacks/github-actions/setup-pack@v5.9.4
-      - uses: actions/download-artifact@v5
+      - uses: actions/checkout@v6
+      - uses: buildpacks/github-actions/setup-tools@v5.9.7
+      - uses: buildpacks/github-actions/setup-pack@v5.9.7
+      - uses: actions/download-artifact@v6
         with:
           name: buildpack
       - run: docker load -i buildpack.tar
