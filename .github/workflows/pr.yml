@@ -4,15 +4,20 @@ name: pr
 on:
   pull_request
 
+permissions:
+  contents: read
+
+env:
+  BP_VERSION: ci
+
 jobs:
   build:
-    runs-on: ubuntu-latest
     env:
-      DOCKER_REGISTRY: "r.planetary-quantum.com"
-      DOCKER_REPO: "buildpacks"
-      VERSION: ci
+      DOCKER_REGISTRY: "ttl.sh"
+      BUILD_DIR: build
     outputs:
-      name: ${{ steps.setup.outputs.package }}
+      package: ${{ steps.setup.outputs.package }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
@@ -23,27 +28,31 @@ jobs:
       - id: setup
         shell: bash
         run: |
-          PACKAGE="${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}/deno"
+          DOCKER_REPO=$(uuidgen)
+          PACKAGE="${{ env.DOCKER_REGISTRY }}/${DOCKER_REPO}:20m"
           echo "package=${PACKAGE}" >> $GITHUB_OUTPUT
+          echo "Generated name: ${PACKAGE}" >> $GITHUB_STEP_SUMMARY
       - uses: goreleaser/goreleaser-action@v7
         with:
           version: '~> v2'
           args: build --snapshot --clean
-      - run: make prep VERSION=${{ env.VERSION }}
-      - working-directory: build
-        run: |
-          pack -v \
-            buildpack \
-            package \
-            ${{ steps.setup.outputs.package }}:${{ env.VERSION }}
       - run: |
-          docker save ${{ steps.setup.outputs.package }}:${{ env.VERSION }} -o buildpack.tar
-      - name: Upload buildpack artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: buildpack
-          path: buildpack.tar
-          retention-days: 1
+          make prep \
+            VERSION=${{ env.BP_VERSION }} \
+            BUILD_DIR=${{ env.BUILD_DIR }}
+      - run: |
+          pack buildpack package \
+            ${STEPS_SETUP_OUTPUTS_PACKAGE} \
+            --target linux/amd64 \
+            --config package.toml
+        working-directory: ${{ env.BUILD_DIR }}
+        env:
+          STEPS_SETUP_OUTPUTS_PACKAGE: ${{ steps.setup.outputs.package }}
+      - name: publish temporary image
+        run: |
+          docker push ${STEPS_SETUP_OUTPUTS_PACKAGE}
+        env:
+          STEPS_SETUP_OUTPUTS_PACKAGE: ${{ steps.setup.outputs.package }}
 
   smoke:
     needs: [build]
@@ -63,16 +72,10 @@ jobs:
       - uses: actions/checkout@v6
       - uses: buildpacks/github-actions/setup-tools@v5.11.0
       - uses: buildpacks/github-actions/setup-pack@v5.11.0
-      - uses: actions/download-artifact@v8
-        with:
-          name: buildpack
-      - run: docker load -i buildpack.tar
-      - run: |
-          docker pull paketobuildpacks/builder-jammy-base:latest
-          docker pull paketobuildpacks/run-jammy-base:latest
-          docker pull buildpacksio/lifecycle:0.20.13
+      - run: docker pull ${NEEDS_BUILD_OUTPUTS_PACKAGE}
+        env:
+          NEEDS_BUILD_OUTPUTS_PACKAGE: ${{ needs.build.outputs.package }}
       - run: docker image ls
-      - run: pack buildpack inspect ${{ needs.build.outputs.name }}:ci
       - run: |
           make setup \
             builder=${{ env.BUILDER }}
@@ -80,4 +83,4 @@ jobs:
         run: |
           make smoke-${{ matrix.test }} \
             builder=${{ env.BUILDER }} \
-            buildpack=${{ needs.build.outputs.name }}:ci
+            buildpack=${{ needs.build.outputs.package }}
