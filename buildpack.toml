@@ -11,7 +11,7 @@ api = "0.7"
     uri = "https://github.com/hostwithquantum/deno-buildpack/blob/main/LICENSE"
 
 [metadata]
-  include-files = ["bin/build", "bin/detect", "buildpack.toml"]
+  include-files = ["linux/amd64/bin/build", "linux/amd64/bin/detect", "linux/arm64/bin/build", "linux/arm64/bin/detect", "buildpack.toml"]
   pre-package = "make build"
 
   [[metadata.configurations]]
@@ -84,4 +84,8 @@ api = "0.7"
 
 [[targets]]
   arch = "amd64"
+  os = "linux"
+
+[[targets]]
+  arch = "arm64"
   os = "linux"

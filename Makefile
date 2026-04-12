@@ -49,9 +49,12 @@ smoke-%:
 
 .PHONY: prep
 prep:
-	mkdir -p $(BUILD_DIR)/bin
-	cp dist/build_linux_amd64*/build $(BUILD_DIR)/bin/
-	cp dist/detect_linux_amd64*/detect $(BUILD_DIR)/bin/
+	mkdir -p $(BUILD_DIR)/linux/amd64/bin
+	mkdir -p $(BUILD_DIR)/linux/arm64/bin
+	cp dist/build_linux_amd64*/build $(BUILD_DIR)/linux/amd64/bin/
+	cp dist/detect_linux_amd64*/detect $(BUILD_DIR)/linux/amd64/bin/
+	cp dist/build_linux_arm64*/build $(BUILD_DIR)/linux/arm64/bin/
+	cp dist/detect_linux_arm64*/detect $(BUILD_DIR)/linux/arm64/bin/
 	cp buildpack.toml $(BUILD_DIR)/
 	sed -i.bak -E "s/__replace__/$(VERSION)/" $(BUILD_DIR)/buildpack.toml
 	rm -f $(BUILD_DIR)/buildpack.toml.bak

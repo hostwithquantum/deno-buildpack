@@ -53,7 +53,9 @@ jobs:
       - working-directory: build
         run: |
           pack buildpack package \
-          --publish ${PACKAGE}:${VERSION}
+            --target linux/amd64 \
+            --target linux/arm64 \
+            --publish ${PACKAGE}:${VERSION}
         env:
           PACKAGE: ${{ steps.setup.outputs.package }}
           VERSION: ${{ steps.version.outputs.version }}
