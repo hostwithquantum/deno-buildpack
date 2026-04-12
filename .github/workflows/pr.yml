@@ -57,31 +57,58 @@ jobs:
             BUILD_DIR=${{ env.BUILD_DIR }}
       - run: |
           pack buildpack package \
+            --publish \
             ${PACKAGE} \
             --target linux/amd64 \
+            --target linux/arm64 \
             --config package.toml
         working-directory: ${{ env.BUILD_DIR }}
-        env:
-          PACKAGE: ${{ steps.setup.outputs.package }}
-      - name: publish temporary image
-        run: |
-          docker push ${PACKAGE}
         env:
           PACKAGE: ${{ steps.setup.outputs.package }}
 
   smoke:
     needs: [build]
-    runs-on: ubuntu-latest
-    env:
-      BUILDER: paketobuildpacks/builder-jammy-base:latest
+    runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
         include:
+          # jammy-base (amd64 only) — regression safety net
           - test: deno
+            builder: paketobuildpacks/builder-jammy-base:latest
+            runner: ubuntu-latest
             continue: false
           - test: not-deno
+            builder: paketobuildpacks/builder-jammy-base:latest
+            runner: ubuntu-latest
             continue: true
           - test: deno2-serve
+            builder: paketobuildpacks/builder-jammy-base:latest
+            runner: ubuntu-latest
+            continue: false
+          # ubuntu-noble (amd64 + arm64)
+          - test: deno
+            builder: paketobuildpacks/ubuntu-noble-builder:latest
+            runner: ubuntu-latest
+            continue: false
+          - test: deno
+            builder: paketobuildpacks/ubuntu-noble-builder:latest
+            runner: ubuntu-24.04-arm
+            continue: false
+          - test: not-deno
+            builder: paketobuildpacks/ubuntu-noble-builder:latest
+            runner: ubuntu-latest
+            continue: true
+          - test: not-deno
+            builder: paketobuildpacks/ubuntu-noble-builder:latest
+            runner: ubuntu-24.04-arm
+            continue: true
+          - test: deno2-serve
+            builder: paketobuildpacks/ubuntu-noble-builder:latest
+            runner: ubuntu-latest
+            continue: false
+          - test: deno2-serve
+            builder: paketobuildpacks/ubuntu-noble-builder:latest
+            runner: ubuntu-24.04-arm
             continue: false
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -95,11 +122,11 @@ jobs:
       - run: docker image ls
       - run: |
           make setup \
-            builder=${{ env.BUILDER }}
+            builder=${{ matrix.builder }}
       - continue-on-error: ${{ matrix.continue }}
         run: |
           make smoke-${{ matrix.test }} \
-            builder=${{ env.BUILDER }} \
+            builder=${{ matrix.builder }} \
             buildpack=${PACKAGE}
         env:
           PACKAGE: ${{ needs.build.outputs.package }}

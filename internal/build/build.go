@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/hostwithquantum/deno-buildpack/internal/meta"
 
@@ -63,13 +64,20 @@ func Build(logger scribe.Emitter) packit.BuildFunc {
 			return packit.BuildResult{}, err
 		}
 
+		archTarget := "x86_64-unknown-linux-gnu"
+		if runtime.GOARCH == "arm64" {
+			archTarget = "aarch64-unknown-linux-gnu"
+		}
+
 		var downloadUrl string
 		if denoVersion != "latest" {
 			downloadUrl = fmt.Sprintf(
-				"https://github.com/denoland/deno/releases/download/%s/deno-x86_64-unknown-linux-gnu.zip",
-				denoVersion)
+				"https://github.com/denoland/deno/releases/download/%s/deno-%s.zip",
+				denoVersion, archTarget)
 		} else {
-			downloadUrl = "https://github.com/denoland/deno/releases/latest/download/deno-x86_64-unknown-linux-gnu.zip"
+			downloadUrl = fmt.Sprintf(
+				"https://github.com/denoland/deno/releases/latest/download/deno-%s.zip",
+				archTarget)
 		}
 
 		logger.Subprocess("Downloading deno %q from Github", denoVersion)
