@@ -45,7 +45,6 @@ smoke-%:
 		--builder $(builder) \
 		--path ./samples/$(test) \
 		--env "BP_LOG_LEVEL=DEBUG" \
-		--pull-policy never \
 		--buildpack $(buildpack)
 
 .PHONY: prep
