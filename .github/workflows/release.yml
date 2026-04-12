@@ -16,19 +16,21 @@ jobs:
       DOCKER_REGISTRY: "r.planetary-quantum.com"
       DOCKER_REPO: "buildpacks"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
-      - uses: actions/setup-go@v6
+          persist-credentials: false
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
           go-version-file: go.mod
-      - uses: docker/login-action@v4
+          cache: false
+      - uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
         with:
           registry: ${{ env.DOCKER_REGISTRY }}
           username: ${{ secrets.BP_QUANTUM_DOCKER_USERNAME }}
           password: ${{ secrets.BP_QUANTUM_DOCKER_PASSWORD }}
-      - uses: buildpacks/github-actions/setup-tools@v5.11.0
-      - uses: buildpacks/github-actions/setup-pack@v5.11.0
+      - uses: buildpacks/github-actions/setup-tools@06e250da5bb4ccb9a2103719a21d2a7f2252fe83 # v5.11.0
+      - uses: buildpacks/github-actions/setup-pack@06e250da5bb4ccb9a2103719a21d2a7f2252fe83 # v5.11.0
       - id: version
         shell: bash
         run: |
@@ -39,14 +41,19 @@ jobs:
         run: |
           PACKAGE="${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}/deno"
           echo "package=${PACKAGE}" >> $GITHUB_OUTPUT
-      - uses: goreleaser/goreleaser-action@v7
+      - uses: goreleaser/goreleaser-action@ec59f474b9834571250b370d4735c50f8e2d1e29 # v7
         with:
           version: '~> v2'
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: make prep VERSION=${{ steps.version.outputs.version }}
+      - run: make prep VERSION=${VERSION}
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
       - working-directory: build
         run: |
           pack buildpack package \
-          --publish ${{ steps.setup.outputs.package }}:${{ steps.version.outputs.version }}
+          --publish ${PACKAGE}:${VERSION}
+        env:
+          PACKAGE: ${{ steps.setup.outputs.package }}
+          VERSION: ${{ steps.version.outputs.version }}

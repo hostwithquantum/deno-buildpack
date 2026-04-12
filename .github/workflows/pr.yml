@@ -11,6 +11,18 @@ env:
   BP_VERSION: ci
 
 jobs:
+  check:
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: zizmorcore/zizmor-action@71321a20a9ded102f6e9ce5718a2fcec2c4f70d8 # v0.5.2
+
   build:
     env:
       DOCKER_REGISTRY: "ttl.sh"
@@ -19,12 +31,15 @@ jobs:
       package: ${{ steps.setup.outputs.package }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
           go-version-file: go.mod
-      - uses: buildpacks/github-actions/setup-tools@v5.11.0
-      - uses: buildpacks/github-actions/setup-pack@v5.11.0
+          cache: false
+      - uses: buildpacks/github-actions/setup-tools@06e250da5bb4ccb9a2103719a21d2a7f2252fe83 # v5.11.0
+      - uses: buildpacks/github-actions/setup-pack@06e250da5bb4ccb9a2103719a21d2a7f2252fe83 # v5.11.0
       - id: setup
         shell: bash
         run: |
@@ -32,7 +47,7 @@ jobs:
           PACKAGE="${{ env.DOCKER_REGISTRY }}/${DOCKER_REPO}:20m"
           echo "package=${PACKAGE}" >> $GITHUB_OUTPUT
           echo "Generated name: ${PACKAGE}" >> $GITHUB_STEP_SUMMARY
-      - uses: goreleaser/goreleaser-action@v7
+      - uses: goreleaser/goreleaser-action@ec59f474b9834571250b370d4735c50f8e2d1e29 # v7
         with:
           version: '~> v2'
           args: build --snapshot --clean
@@ -42,17 +57,17 @@ jobs:
             BUILD_DIR=${{ env.BUILD_DIR }}
       - run: |
           pack buildpack package \
-            ${STEPS_SETUP_OUTPUTS_PACKAGE} \
+            ${PACKAGE} \
             --target linux/amd64 \
             --config package.toml
         working-directory: ${{ env.BUILD_DIR }}
         env:
-          STEPS_SETUP_OUTPUTS_PACKAGE: ${{ steps.setup.outputs.package }}
+          PACKAGE: ${{ steps.setup.outputs.package }}
       - name: publish temporary image
         run: |
-          docker push ${STEPS_SETUP_OUTPUTS_PACKAGE}
+          docker push ${PACKAGE}
         env:
-          STEPS_SETUP_OUTPUTS_PACKAGE: ${{ steps.setup.outputs.package }}
+          PACKAGE: ${{ steps.setup.outputs.package }}
 
   smoke:
     needs: [build]
@@ -69,12 +84,14 @@ jobs:
           - test: deno2-serve
             continue: false
     steps:
-      - uses: actions/checkout@v6
-      - uses: buildpacks/github-actions/setup-tools@v5.11.0
-      - uses: buildpacks/github-actions/setup-pack@v5.11.0
-      - run: docker pull ${NEEDS_BUILD_OUTPUTS_PACKAGE}
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: buildpacks/github-actions/setup-tools@06e250da5bb4ccb9a2103719a21d2a7f2252fe83 # v5.11.0
+      - uses: buildpacks/github-actions/setup-pack@06e250da5bb4ccb9a2103719a21d2a7f2252fe83 # v5.11.0
+      - run: docker pull ${PACKAGE}
         env:
-          NEEDS_BUILD_OUTPUTS_PACKAGE: ${{ needs.build.outputs.package }}
+          PACKAGE: ${{ needs.build.outputs.package }}
       - run: docker image ls
       - run: |
           make setup \
@@ -83,4 +100,6 @@ jobs:
         run: |
           make smoke-${{ matrix.test }} \
             builder=${{ env.BUILDER }} \
-            buildpack=${{ needs.build.outputs.package }}
+            buildpack=${PACKAGE}
+        env:
+          PACKAGE: ${{ needs.build.outputs.package }}
