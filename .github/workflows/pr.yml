@@ -34,8 +34,8 @@ jobs:
         with:
           go-version-file: go.mod
           cache: false
-      - uses: buildpacks/github-actions/setup-tools@b4faaabcd9dbc5fa332451ae33bce8b583f3ec1b # v5.12.0
-      - uses: buildpacks/github-actions/setup-pack@b4faaabcd9dbc5fa332451ae33bce8b583f3ec1b # v5.12.0
+      - uses: buildpacks/github-actions/setup-tools@3fc05449a74f1a007f75e87d46afea4fb471127f # v5.12.1
+      - uses: buildpacks/github-actions/setup-pack@3fc05449a74f1a007f75e87d46afea4fb471127f # v5.12.1
       - id: setup
         shell: bash
         run: |
@@ -107,8 +107,8 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
-      - uses: buildpacks/github-actions/setup-tools@b4faaabcd9dbc5fa332451ae33bce8b583f3ec1b # v5.12.0
-      - uses: buildpacks/github-actions/setup-pack@b4faaabcd9dbc5fa332451ae33bce8b583f3ec1b # v5.12.0
+      - uses: buildpacks/github-actions/setup-tools@3fc05449a74f1a007f75e87d46afea4fb471127f # v5.12.1
+      - uses: buildpacks/github-actions/setup-pack@3fc05449a74f1a007f75e87d46afea4fb471127f # v5.12.1
       - run: docker pull ${PACKAGE}
         env:
           PACKAGE: ${{ needs.build.outputs.package }}
