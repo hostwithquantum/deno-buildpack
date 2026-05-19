@@ -16,6 +16,14 @@ jobs:
       DOCKER_REGISTRY: "r.planetary-quantum.com"
       DOCKER_REPO: "buildpacks"
     steps:
+      - id: load-registry-credentials
+        uses: 1password/load-secrets-action@92467eb28f72e8255933372f1e0707c567ce2259 # v4.0.0
+        with:
+          export-env: false
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_RUNWAYOSS_SERVICE_ACCOUNT }}
+          REGISTRY_USERNAME: op://RunwayOSS/robot-harbor-buildpacks/username
+          REGISTRY_PASSWORD: op://RunwayOSS/robot-harbor-buildpacks/password
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
@@ -27,8 +35,8 @@ jobs:
       - uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
         with:
           registry: ${{ env.DOCKER_REGISTRY }}
-          username: ${{ secrets.BP_QUANTUM_DOCKER_USERNAME }}
-          password: ${{ secrets.BP_QUANTUM_DOCKER_PASSWORD }}
+          username: ${{ steps.load-registry-credentials.outputs.REGISTRY_USERNAME }}
+          password: ${{ steps.load-registry-credentials.outputs.REGISTRY_PASSWORD }}
       - uses: buildpacks/github-actions/setup-tools@3fc05449a74f1a007f75e87d46afea4fb471127f # v5.12.1
       - uses: buildpacks/github-actions/setup-pack@3fc05449a74f1a007f75e87d46afea4fb471127f # v5.12.1
       - id: version
@@ -41,7 +49,7 @@ jobs:
         run: |
           PACKAGE="${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}/deno"
           echo "package=${PACKAGE}" >> $GITHUB_OUTPUT
-      - uses: goreleaser/goreleaser-action@1a80836c5c9d9e5755a25cb59ec6f45a3b5f41a8 # v7
+      - uses: goreleaser/goreleaser-action@1a80836c5c9d9e5755a25cb59ec6f45a3b5f41a8 # v7.2.1
         with:
           version: '~> v2'
           args: release --clean

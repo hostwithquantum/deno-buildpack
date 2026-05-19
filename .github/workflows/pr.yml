@@ -43,7 +43,7 @@ jobs:
           PACKAGE="${{ env.DOCKER_REGISTRY }}/${DOCKER_REPO}:20m"
           echo "package=${PACKAGE}" >> $GITHUB_OUTPUT
           echo "Generated name: ${PACKAGE}" >> $GITHUB_STEP_SUMMARY
-      - uses: goreleaser/goreleaser-action@1a80836c5c9d9e5755a25cb59ec6f45a3b5f41a8 # v7
+      - uses: goreleaser/goreleaser-action@1a80836c5c9d9e5755a25cb59ec6f45a3b5f41a8 # v7.2.1
         with:
           version: '~> v2'
           args: build --snapshot --clean
