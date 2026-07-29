@@ -24,7 +24,7 @@ jobs:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_RUNWAYOSS_SERVICE_ACCOUNT }}
           REGISTRY_USERNAME: op://RunwayOSS/robot-harbor-buildpacks/username
           REGISTRY_PASSWORD: op://RunwayOSS/robot-harbor-buildpacks/password
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -37,8 +37,8 @@ jobs:
           registry: ${{ env.DOCKER_REGISTRY }}
           username: ${{ steps.load-registry-credentials.outputs.REGISTRY_USERNAME }}
           password: ${{ steps.load-registry-credentials.outputs.REGISTRY_PASSWORD }}
-      - uses: buildpacks/github-actions/setup-tools@e3b14c6e906f91da358e01dc2849ce068188107f # v5.12.5
-      - uses: buildpacks/github-actions/setup-pack@e3b14c6e906f91da358e01dc2849ce068188107f # v5.12.5
+      - uses: buildpacks/github-actions/setup-tools@c1c71086a0e89a65c04ea113390227fd7f05d9df # v6.0.0
+      - uses: buildpacks/github-actions/setup-pack@c1c71086a0e89a65c04ea113390227fd7f05d9df # v6.0.0
       - id: version
         shell: bash
         run: |
