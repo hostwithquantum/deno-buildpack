@@ -15,10 +15,10 @@ jobs:
       actions: read
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: zizmorcore/zizmor-action@6599ee8b7a49aef6a770f63d261d214911a7ce02 # v0.6.0
+      - uses: zizmorcore/zizmor-action@6fc4b006235f201fdab3722e17240ab420d580e5 # v0.6.1
 
   build:
     env:
@@ -27,15 +27,15 @@ jobs:
       package: ${{ steps.setup.outputs.package }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
           cache: false
-      - uses: buildpacks/github-actions/setup-tools@e3b14c6e906f91da358e01dc2849ce068188107f # v5.12.5
-      - uses: buildpacks/github-actions/setup-pack@e3b14c6e906f91da358e01dc2849ce068188107f # v5.12.5
+      - uses: buildpacks/github-actions/setup-tools@c1c71086a0e89a65c04ea113390227fd7f05d9df # v6.0.0
+      - uses: buildpacks/github-actions/setup-pack@c1c71086a0e89a65c04ea113390227fd7f05d9df # v6.0.0
       - id: setup
         shell: bash
         run: |
@@ -104,11 +104,11 @@ jobs:
             runner: ubuntu-24.04-arm
             continue: false
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: buildpacks/github-actions/setup-tools@e3b14c6e906f91da358e01dc2849ce068188107f # v5.12.5
-      - uses: buildpacks/github-actions/setup-pack@e3b14c6e906f91da358e01dc2849ce068188107f # v5.12.5
+      - uses: buildpacks/github-actions/setup-tools@c1c71086a0e89a65c04ea113390227fd7f05d9df # v6.0.0
+      - uses: buildpacks/github-actions/setup-pack@c1c71086a0e89a65c04ea113390227fd7f05d9df # v6.0.0
       - run: docker pull ${PACKAGE}
         env:
           PACKAGE: ${{ needs.build.outputs.package }}
