@@ -17,14 +17,14 @@ jobs:
       DOCKER_REPO: "buildpacks"
     steps:
       - id: load-registry-credentials
-        uses: 1password/load-secrets-action@3a12b0ab99d9cd590a3e9b5a90ea017210ed9556 # v4.0.1
+        uses: 1password/load-secrets-action@eb2efd0703da22a93c467f2d1ffbb6826c11e19c # v4.1.1
         with:
           export-env: false
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_RUNWAYOSS_SERVICE_ACCOUNT }}
           REGISTRY_USERNAME: op://RunwayOSS/robot-harbor-buildpacks/username
           REGISTRY_PASSWORD: op://RunwayOSS/robot-harbor-buildpacks/password
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -32,13 +32,13 @@ jobs:
         with:
           go-version-file: go.mod
           cache: false
-      - uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
         with:
           registry: ${{ env.DOCKER_REGISTRY }}
           username: ${{ steps.load-registry-credentials.outputs.REGISTRY_USERNAME }}
           password: ${{ steps.load-registry-credentials.outputs.REGISTRY_PASSWORD }}
-      - uses: buildpacks/github-actions/setup-tools@e3b14c6e906f91da358e01dc2849ce068188107f # v5.12.5
-      - uses: buildpacks/github-actions/setup-pack@e3b14c6e906f91da358e01dc2849ce068188107f # v5.12.5
+      - uses: buildpacks/github-actions/setup-tools@c1c71086a0e89a65c04ea113390227fd7f05d9df # v6.0.0
+      - uses: buildpacks/github-actions/setup-pack@c1c71086a0e89a65c04ea113390227fd7f05d9df # v6.0.0
       - id: version
         shell: bash
         run: |
